@@ -19,7 +19,7 @@ def getUnsolvedProblems(contests):
 	parsedContest = 0
 	for contestId in contests:
 		# Get index of all problems in given contest like A, B, C1, C2 etc
-		url = API + "contest.standings?contestId=" + contestId + "&handles=" + handle + "&showUnofficial=true"
+		url = API + "contest.standings?contestId=" + contestId + "&handles=" + handle
 		data = json.load(urllib.request.urlopen(url))
 		checkResponse(data["status"])
 		problemList = []
@@ -27,7 +27,7 @@ def getUnsolvedProblems(contests):
 			problemList.append(problem["index"])
 
 		# Get solved problems in current contest
-		url = API + "contest.status?contestId=" + contestId + "&handle=" + handle + "&showUnofficial=true"
+		url = API + "contest.status?contestId=" + contestId + "&handle=" + handle
 		data = json.load(urllib.request.urlopen(url))
 		checkResponse(data["status"])
 		solved = set()
