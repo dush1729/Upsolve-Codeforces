@@ -1,6 +1,7 @@
 import sys
 import json
 import urllib.request
+import asciichartpy
 
 API = "https://codeforces.com/api/"
 
@@ -42,6 +43,19 @@ def getUnsolvedProblems(contests):
 		parsedContest += 1
 		print("Parsed " + str(parsedContest) + " of " + str(len(contests)) + " contests.")
 
+def getData(key):
+	url = API + "user.rating?handle=" + handle
+	data = json.load(urllib.request.urlopen(url))
+	checkResponse(data["status"])
+	return [] if key not in data["result"][0] else [contest[key] for contest in data["result"]]
+
+def pltLineChart(scale, limit):
+	#ranks = []
+	ranks = getData("rank")
+	maximum = max(ranks)
+	ranks[:] = [(rank / maximum) * scale for rank in ranks]
+	print(asciichartpy.plot(ranks[:limit]))
+
 # Execution starts from here
 if(len(sys.argv) < 2):
 	print("Please enter your codeforces handle as first argument.")
@@ -50,3 +64,4 @@ if(len(sys.argv) < 2):
 handle = sys.argv[1]
 contests = getContestList()
 getUnsolvedProblems(contests)
+#pltLineChart(10, 60)
