@@ -9,29 +9,33 @@ def checkResponse(status):
 		print("Something went wrong. Please try again after some time!")
 		sys.exit(0)
 
-def getContestList():
-	url = API + "user.rating?handle=" + handle
+def getData(url):
 	data = json.load(urllib.request.urlopen(url))
 	checkResponse(data["status"])
-	return [str(contest["contestId"]) for contest in data["result"]]
+	return data["result"]
+
+def getAllContestProblems():
+	data = getData(API + "problemset.problems")
+	return [str(problem["contestId"]) + problem["index"] for problem in data["problemStatistics"]]
+
+def getParticipatedContestList():
+	data = getData(API + "user.rating?handle=" + handle)
+	return [str(contest["contestId"]) for contest in data]
 
 def getUnsolvedProblems(contests):
+	unsolved = []
 	parsedContest = 0
 	for contestId in contests:
 		# Get index of all problems in given contest like A, B, C1, C2 etc
-		url = API + "contest.standings?contestId=" + contestId + "&handles=" + handle
-		data = json.load(urllib.request.urlopen(url))
-		checkResponse(data["status"])
+		data = getData(API + "contest.standings?contestId=" + contestId + "&handles=" + handle)
 		problemList = []
-		for problem in data["result"]["problems"]:
+		for problem in data["problems"]:
 			problemList.append(problem["index"])
 
 		# Get solved problems in current contest
-		url = API + "contest.status?contestId=" + contestId + "&handle=" + handle
-		data = json.load(urllib.request.urlopen(url))
-		checkResponse(data["status"])
+		data = getData(API + "contest.status?contestId=" + contestId + "&handle=" + handle)
 		solved = set()
-		for submission in data["result"]:
+		for submission in data:
 			if(submission["verdict"] == "OK"):
 				solved.add(submission["problem"]["index"])
 
@@ -39,8 +43,14 @@ def getUnsolvedProblems(contests):
 		for problem in solved:
 			problemList.remove(problem)
 
+		# Add to unsolved problem
+		for problem in problemList:
+			unsolved.append(problem)
+
 		parsedContest += 1
 		print("Parsed " + str(parsedContest) + " of " + str(len(contests)) + " contests.")
+	print("Successfully parsed all contests!")
+	return unsolved
 
 # Execution starts from here
 if(len(sys.argv) < 2):
@@ -48,5 +58,6 @@ if(len(sys.argv) < 2):
 	sys.exit(0)
 
 handle = sys.argv[1]
-contests = getContestList()
+getAllContestProblems()
+contests = getParticipatedContestList()
 getUnsolvedProblems(contests)
