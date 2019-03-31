@@ -3,6 +3,7 @@ import json
 import urllib.request
 
 API = "https://codeforces.com/api/"
+PROBLEM_LINK = "https://codeforces.com/problemset/problem/"
 
 def checkResponse(status):
 	if(status != "OK"):
@@ -14,9 +15,13 @@ def getData(url):
 	checkResponse(data["status"])
 	return data["result"]
 
-def getAllContestProblems():
+def getAllProblemSolvedCount():
 	data = getData(API + "problemset.problems")
-	return [str(problem["contestId"]) + problem["index"] for problem in data["problemStatistics"]]
+	solvedCount = {}
+	for problem in data["problemStatistics"]:
+		solvedCount[str(problem["contestId"]) + problem["index"]] = problem["solvedCount"] 
+	print("Successfully fetched all codeforces contest problems!")
+	return solvedCount
 
 def getParticipatedContestList():
 	data = getData(API + "user.rating?handle=" + handle)
@@ -45,7 +50,7 @@ def getUnsolvedProblems(contests):
 
 		# Add to unsolved problem
 		for problem in problemList:
-			unsolved.append(problem)
+			unsolved.append(str(contestId) + problem)
 
 		parsedContest += 1
 		print("Parsed " + str(parsedContest) + " of " + str(len(contests)) + " contests.")
@@ -58,6 +63,20 @@ if(len(sys.argv) < 2):
 	sys.exit(0)
 
 handle = sys.argv[1]
-getAllContestProblems()
-contests = getParticipatedContestList()
-getUnsolvedProblems(contests)
+participatedContest = getParticipatedContestList()
+unsolvedProblems = getUnsolvedProblems(participatedContest)
+solvedCount = getAllProblemSolvedCount()
+
+unsolvedDict = {}
+for problem in unsolvedProblems:
+	# Unfortunately API misses few problem in problemset, so need to check here
+	if problem in solvedCount:
+		unsolvedDict[problem] = solvedCount[problem]
+unsolvedDict = sorted(unsolvedDict.items(), key=lambda x:x[1], reverse = True)
+for problem in unsolvedDict:
+	index = 0
+	for i in range(0,len(problem[0])):
+		if(problem[0][i].isalpha()):
+			index = i + 1
+			break
+	print(PROBLEM_LINK + problem[0][0:i] + "/" + problem[0][i:])
