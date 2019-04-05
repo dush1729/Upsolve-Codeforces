@@ -2,7 +2,7 @@
 
 Get unsolved problems for a given user sorted by number of accepted solutions in decreasing order using codeforces API and save it to file.
 
-![](https://drive.google.com/open?id=1EGDPwkcHlzu8kcQlgLpNaBwZG0xTWEE9)
+![Example image](https://drive.google.com/uc?export=view&id=1EGDPwkcHlzu8kcQlgLpNaBwZG0xTWEE9)
 
 ###Installation
 
