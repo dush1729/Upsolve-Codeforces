@@ -15,14 +15,6 @@ def getData(url):
 	checkResponse(data["status"])
 	return data["result"]
 
-def getAllProblemSolvedCount():
-	data = getData(API + "problemset.problems")
-	solvedCount = {}
-	for problem in data["problemStatistics"]:
-		solvedCount[str(problem["contestId"]) + problem["index"]] = problem["solvedCount"] 
-	print("Successfully fetched all codeforces contest problems!")
-	return solvedCount
-
 def getParticipatedContestList():
 	data = getData(API + "user.rating?handle=" + handle)
 	return [str(contest["contestId"]) for contest in data]
@@ -54,8 +46,16 @@ def getUnsolvedProblems(contests):
 
 		parsedContest += 1
 		print("Parsed " + str(parsedContest) + " of " + str(len(contests)) + " contests.")
-	print("Successfully parsed all contests!")
+	print("Successfully parsed all participated contests!")
 	return unsolved
+
+def getAllProblemSolvedCount():
+	data = getData(API + "problemset.problems")
+	solvedCount = {}
+	for problem in data["problemStatistics"]:
+		solvedCount[str(problem["contestId"]) + problem["index"]] = problem["solvedCount"] 
+	print("Successfully fetched all codeforces contest problems!")
+	return solvedCount
 
 # Execution starts from here
 if(len(sys.argv) < 2):
@@ -73,10 +73,14 @@ for problem in unsolvedProblems:
 	if problem in solvedCount:
 		unsolvedDict[problem] = solvedCount[problem]
 unsolvedDict = sorted(unsolvedDict.items(), key=lambda x:x[1], reverse = True)
+file = open(handle, "w")
 for problem in unsolvedDict:
 	index = 0
 	for i in range(0,len(problem[0])):
 		if(problem[0][i].isalpha()):
 			index = i + 1
 			break
-	print(PROBLEM_LINK + problem[0][0:i] + "/" + problem[0][i:])
+	line = PROBLEM_LINK + problem[0][0:i] + "/" + problem[0][i:] + " - " + str(problem[1])
+	print(line)
+	file.write(line+"\n")
+print("Saved data to file " + handle + ". Happy upsolving! :)")
