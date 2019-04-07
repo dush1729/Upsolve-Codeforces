@@ -25,10 +25,11 @@ def getUnsolvedProblems(contests):
 	for contestId in contests:
 		# Get index of all problems in given contest like A, B, C1, C2 etc
 		data = getData(API + "contest.standings?contestId=" + contestId + "&handles=" + handle)
-		problemList = []
 		for problem in data["problems"]:
-			unsolvedDict[str(contestId) + problem["index"]] = problem["rating"]
-			problemList.append(problem["index"])
+			if "rating" in problem:
+				unsolvedDict[str(contestId) + problem["index"]] = problem["rating"]
+			else:
+				print("Sorry no rating defined for problem " + contestId + problem["index"])
 
 		# Get solved problems in current contest
 		data = getData(API + "contest.status?contestId=" + contestId + "&handle=" + handle)
@@ -39,7 +40,8 @@ def getUnsolvedProblems(contests):
 
 		# Delete solved problems
 		for problem in solved:
-			unsolvedDict.pop(str(contestId) + problem)
+			if problem in unsolvedDict:
+				unsolvedDict.pop(str(contestId) + problem)
 
 		parsedContest += 1
 		print("Parsed " + str(parsedContest) + " of " + str(len(contests)) + " contests.")
